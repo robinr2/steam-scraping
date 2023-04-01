@@ -27,7 +27,7 @@ export function getPrices() {
     return data
   }
 
-  const rows = fs.readFileSync('./data.csv', 'utf8').trim().split('\n')
+  const rows = fs.readFileSync('./data-clean.csv', 'utf8').trim().split('\n')
   const table = rows.map((row) => row.split(';'))
 
   let index = 0
@@ -58,5 +58,5 @@ export function getPrices() {
     } catch (error) {
       console.error(error)
     }
-  }, 15000)
+  }, 30000)
 }
