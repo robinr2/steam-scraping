@@ -57,7 +57,7 @@ const urlInterval = setInterval(async () => {
 
     const row = `${id};${url}`.replace(/\r?\n|\r/g, '') + '\n'
 
-    fs.appendFile('./data.csv', row, 'utf-8', (error) => {
+    fs.appendFile('./data1.csv', row, 'utf-8', (error) => {
       if (error) throw error
     })
 
