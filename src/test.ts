@@ -18,11 +18,11 @@ type Data = {
   price_suffix: string
 }
 
-const rows = fs.readFileSync('./data-clean.csv', 'utf8').trim().split('\n')
-const table = rows.map((row) => row.split(';'))
-
-let index = 0
 export function test() {
+  const rows = fs.readFileSync('./data-clean.csv', 'utf8').trim().split('\n')
+  const table = rows.map((row) => row.split(';'))
+
+  let index = 0
   setInterval(async () => {
     if (index > rows.length - 1) {
       console.log('Restarting...')
@@ -81,7 +81,7 @@ export function test() {
       const data = (await response.json()) as Data
 
       const line =
-        `${id};${url};${data.highest_buy_order};${data.lowest_sell_order}`.replace(
+        `${id};${url};${data.highest_buy_order};${data.lowest_sell_order};${Date.now()}`.replace(
           /\r?\n|\r/g,
           ''
         ) + '\n'
@@ -94,15 +94,5 @@ export function test() {
     } catch (error) {
       console.error(error)
     }
-
-    // fetch(
-    //   `https://steamcommunity.com/market/itemordershistogram?country=DE&language=german&currency=3&item_nameid=${id}&two_factor=0`,
-    //   options
-    // )
-    //   .then((response) => response.json() as Data)
-    //   .then((data: Data) => {
-    //     console.log(`${index} / ${rows.length} >> Successful`)
-    //   })
-    //   .catch((error) => console.error(error))
   }, 5000)
 }
