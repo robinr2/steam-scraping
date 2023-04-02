@@ -8,7 +8,7 @@ async function getHTML(url: string) {
 }
 
 export function getIds() {
-  const urls = fs.readFileSync('./urls.txt', 'utf8').split('\n')
+  const urls = fs.readFileSync('data/urls.txt', 'utf8').split('\n')
 
   const regex = /Market_LoadOrderSpread\((.*?)\)/
   let index = urls.length - 1

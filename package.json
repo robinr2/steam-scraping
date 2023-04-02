@@ -5,9 +5,11 @@
   "main": "dist/index.js",
   "type": "module",
   "scripts": {
-    "build": "npx tsc",
-    "start": "node dist/index.js",
-    "dev": "nodemon src/index.ts"
+    "build": "rm -r dist && tsc",
+    "scraping": "node dist/scraping/index.js",
+    "api": "node dist/api/index.js",
+    "scraping:dev": "nodemon src/scraping/index.ts",
+    "api:dev": "nodemon src/api/index.ts"
   },
   "keywords": [],
   "author": "",

@@ -1,7 +1,7 @@
 import fs from 'fs'
 
 export function clean() {
-  const rows = fs.readFileSync('./data.csv', 'utf8').trim().split('\n')
+  const rows = fs.readFileSync('data/data.csv', 'utf8').trim().split('\n')
   console.log('Before: ' + rows.length)
 
   const cleanedRows = new Set(rows)
