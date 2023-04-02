@@ -18,15 +18,15 @@ type Data = {
   price_suffix: string
 }
 
-export function getPrices() {
-  async function getData(id: string): Promise<Data> {
-    const response = await fetch(
-      `https://steamcommunity.com/market/itemordershistogram?country=DE&language=german&currency=3&item_nameid=${id}&two_factor=0`
-    )
-    const data = (await response.json()) as Data
-    return data
-  }
+async function getData(id: string): Promise<Data> {
+  const response = await fetch(
+    `https://steamcommunity.com/market/itemordershistogram?country=DE&language=german&currency=3&item_nameid=${id}&two_factor=0`
+  )
+  const data = (await response.json()) as Data
+  return data
+}
 
+export function getPrices() {
   const rows = fs.readFileSync('./data-clean.csv', 'utf8').trim().split('\n')
   const table = rows.map((row) => row.split(';'))
 
@@ -58,5 +58,5 @@ export function getPrices() {
     } catch (error) {
       console.error(error)
     }
-  }, 30000)
+  }, 240000)
 }
