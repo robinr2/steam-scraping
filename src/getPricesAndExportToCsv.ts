@@ -18,14 +18,14 @@ type Data = {
   price_suffix: string
 }
 
-export function test() {
+export default function getPricesAndExportToCsv() {
   const rows = fs.readFileSync('./data-clean.csv', 'utf8').trim().split('\n')
-  const table = rows.map((row) => row.split(';'))
+  const table = rows.map((row) => row.split(';')).slice(0, 5)
 
   let index = 0
   setInterval(async () => {
     if (index > rows.length - 1) {
-      console.log('Restarting...')
+      console.log('>> Restarting')
       index = 0
     }
 
@@ -86,9 +86,7 @@ export function test() {
           ''
         ) + '\n'
 
-      fs.appendFile('./data-final.csv', line, 'utf-8', (error) => {
-        if (error) console.error(error)
-      })
+      fs.appendFileSync('./data-final.csv', line)
 
       console.log(`${index} / ${rows.length} >> Successful`)
     } catch (error) {
