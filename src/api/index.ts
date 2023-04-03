@@ -14,8 +14,8 @@ const filteredData = data.filter(
   (row) =>
     row.highest_buy_order > 0 &&
     row.lowest_sell_order > 0 &&
-    row.lowest_sell_order < 10 &&
-    row.lowest_sell_order > 5
+    row.lowest_sell_order < 70 &&
+    row.lowest_sell_order > 4.5
 )
 
 const sortedData = [...filteredData].sort((a, b) => {
@@ -27,6 +27,6 @@ const sortedData = [...filteredData].sort((a, b) => {
 
 for (const row of sortedData) {
   console.log(row.url)
-  const line = `${row.url}\n`
+  const line = `${row.id};${row.url}\n`
   fs.appendFileSync('data/data-final-sorted.csv', line)
 }

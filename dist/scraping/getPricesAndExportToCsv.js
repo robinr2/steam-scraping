@@ -1,7 +1,7 @@
 import fetch from 'node-fetch';
 import fs from 'fs';
 export default function getPricesAndExportToCsv() {
-    const rows = fs.readFileSync('data/data-clean.csv', 'utf8').trim().split('\n').slice(0, 1);
+    const rows = fs.readFileSync('data/data-final-sorted.csv', 'utf8').trim().split('\n');
     const table = rows.map((row) => row.split(';'));
     let fileTimeStamp = Date.now();
     let index = 0;
