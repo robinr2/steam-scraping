@@ -1,13 +1,15 @@
 import fetch from 'node-fetch';
 import fs from 'fs';
 export default function getPricesAndExportToCsv() {
-    const rows = fs.readFileSync('data/data-clean.csv', 'utf8').trim().split('\n');
-    const table = rows.map((row) => row.split(';')).slice(0, 1);
+    const rows = fs.readFileSync('data/data-clean.csv', 'utf8').trim().split('\n').slice(0, 1);
+    const table = rows.map((row) => row.split(';'));
+    let fileTimeStamp = Date.now();
     let index = 0;
     setInterval(async () => {
         if (index > rows.length - 1) {
             console.log('>> Restarting');
             index = 0;
+            fileTimeStamp = Date.now();
         }
         const row = table[index++];
         if (!row) {
@@ -50,7 +52,7 @@ export default function getPricesAndExportToCsv() {
             const response = await fetch(`https://steamcommunity.com/market/itemordershistogram?country=DE&language=german&currency=3&item_nameid=${id}&two_factor=0`, options);
             const data = (await response.json());
             const line = `${id};${url};${data.highest_buy_order};${data.lowest_sell_order};${Date.now()}`.replace(/\r?\n|\r/g, '') + '\n';
-            fs.appendFileSync('data/data-final.csv', line);
+            fs.appendFileSync(`data/data-final-${fileTimeStamp}.csv`, line);
             console.log(`${index} / ${rows.length} >> Successful`);
         }
         catch (error) {

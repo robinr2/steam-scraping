@@ -8,11 +8,18 @@ const data = table.map((row) => ({
     lowest_sell_order: row[3] ? +row[3] / 100 : 0,
     timestamp: row[4],
 }));
-const filteredData = data.filter((row) => row.highest_buy_order > 0 && row.lowest_sell_order > 0);
+const filteredData = data.filter((row) => row.highest_buy_order > 0 &&
+    row.lowest_sell_order > 0 &&
+    row.lowest_sell_order < 10 &&
+    row.lowest_sell_order > 5);
 const sortedData = [...filteredData].sort((a, b) => {
     const marginA = +a.lowest_sell_order - (+a.highest_buy_order * 1.15 - 0.01);
     const marginB = +b.lowest_sell_order - (+b.highest_buy_order * 1.15 - 0.01);
     return marginB - marginA;
 });
-console.log(sortedData);
+for (const row of sortedData) {
+    console.log(row.url);
+    const line = `${row.url}\n`;
+    fs.appendFileSync('data/data-final-sorted.csv', line);
+}
 //# sourceMappingURL=index.js.map

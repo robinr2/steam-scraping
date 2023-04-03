@@ -19,14 +19,16 @@ type Data = {
 }
 
 export default function getPricesAndExportToCsv() {
-  const rows = fs.readFileSync('data/data-clean.csv', 'utf8').trim().split('\n')
-  const table = rows.map((row) => row.split(';')).slice(0, 1)
+  const rows = fs.readFileSync('data/data-clean.csv', 'utf8').trim().split('\n').slice(0, 1)
+  const table = rows.map((row) => row.split(';'))
 
+  let fileTimeStamp = Date.now()
   let index = 0
   setInterval(async () => {
     if (index > rows.length - 1) {
       console.log('>> Restarting')
       index = 0
+      fileTimeStamp = Date.now()
     }
 
     const row = table[index++]
@@ -86,7 +88,7 @@ export default function getPricesAndExportToCsv() {
           ''
         ) + '\n'
 
-      fs.appendFileSync('data/data-final.csv', line)
+      fs.appendFileSync(`data/data-final-${fileTimeStamp}.csv`, line)
 
       console.log(`${index} / ${rows.length} >> Successful`)
     } catch (error) {
