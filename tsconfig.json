@@ -15,7 +15,8 @@
     "sourceMap": true,
     "outDir": "dist",
     "skipLibCheck": true,
-    "noUncheckedIndexedAccess": true
+    "noUncheckedIndexedAccess": true,
+    "resolveJsonModule": true
   },
   "include": ["src/**/*"]
 }
