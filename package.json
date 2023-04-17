@@ -11,6 +11,7 @@
     "scraping:dev": "nodemon src/scraping/index.ts",
     "api:dev": "nodemon src/api/index.ts"
   },
+  "proxy": "http://localhost:3000",
   "keywords": [],
   "author": "",
   "license": "ISC",

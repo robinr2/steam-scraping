@@ -1,9 +1,12 @@
 import express, { Request, Response } from 'express'
 import fs from 'fs'
+import { Item } from '../shared/types.js'
 
 const app = express()
 const PORT = 3000
 const ITEM_PATH = 'data/items.csv'
+
+// TODO: Can probably be a string instead
 const HEADERS = [
   'id',
   'url',
@@ -13,16 +16,6 @@ const HEADERS = [
   'tracked',
   'updatedAt',
 ]
-
-type Item = {
-  id: string
-  url: string
-  highestBuyOrder: number
-  lowestSellOrder: number
-  sellsPerMonth: number
-  tracked: boolean
-  updatedAt: number
-}
 
 type UpdateBody = {
   highestBuyOrder: Item['highestBuyOrder'] | undefined
@@ -56,7 +49,7 @@ function getLines() {
 }
 
 function setLines(lines: string[]) {
-  const data = lines.join('\n')
+  const data = [HEADERS.join(';'), ...lines].join('\n')
   fs.writeFileSync(ITEM_PATH, data, 'utf8')
 }
 
@@ -107,7 +100,7 @@ app.get('/items', (req: Request, res: Response) => {
   res.json(items)
 })
 
-app.post('/items/:id', (req: Request, res: Response) => {
+app.patch('/items/:id', (req: Request, res: Response) => {
   const { id } = req.params
   if (!id) {
     res.sendStatus(404)
@@ -122,7 +115,10 @@ app.post('/items/:id', (req: Request, res: Response) => {
 
   let updated = false
 
-  for (let line of lines) {
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i]
+    if (!line) continue
+
     const fields = getFields(line)
     if (!fields || fields[0] !== id) continue
 
@@ -135,7 +131,7 @@ app.post('/items/:id', (req: Request, res: Response) => {
     item.lowestSellOrder = lowestSellOrder ?? item.lowestSellOrder
     item.updatedAt = Date.now()
 
-    line = `${item.id};${item.url};${item.highestBuyOrder};${item.lowestSellOrder};${item.sellsPerMonth};${item.tracked};${item.updatedAt}`
+    lines[i] = Object.values(item).join(';')
     updated = true
   }
 
