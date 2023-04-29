@@ -6,7 +6,6 @@ const app = express()
 const PORT = 3000
 const ITEM_PATH = 'data/items.csv'
 
-// TODO: Can probably be a string instead
 const HEADERS = [
   'id',
   'url',
@@ -79,7 +78,7 @@ function getItem(fields: string[]) {
   return item
 }
 
-app.get('/items', (req: Request, res: Response) => {
+function getItems(req: Request, res: Response) {
   const lines = getLines()
   if (!lines) {
     res.sendStatus(404)
@@ -97,8 +96,17 @@ app.get('/items', (req: Request, res: Response) => {
     items.push(item)
   }
 
+  if (req.query.tracked) {
+    const trackedItems = items.filter((item) => item.tracked)
+    res.json(trackedItems)
+    console.log('hello')
+    return
+  }
+
   res.json(items)
-})
+}
+
+app.get('/items', getItems)
 
 app.patch('/items/:id', (req: Request, res: Response) => {
   const { id } = req.params

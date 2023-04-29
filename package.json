@@ -6,10 +6,12 @@
   "type": "module",
   "scripts": {
     "build": "rm -r dist && tsc",
-    "scraping": "node dist/scraping/index.js",
-    "api": "node dist/api/index.js",
+    "api:dev": "nodemon src/api/index.ts",
+    "api:prod": "node dist/api/index.js",
     "scraping:dev": "nodemon src/scraping/index.ts",
-    "api:dev": "nodemon src/api/index.ts"
+    "scraping:prod": "node dist/scraping/index.js",
+    "tracking:dev": "nodemon src/tracking/index.ts",
+    "tracking:prod": "node dist/tracking/index.js"
   },
   "proxy": "http://localhost:3000",
   "keywords": [],
