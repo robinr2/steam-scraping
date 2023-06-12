@@ -1,32 +1,28 @@
 import fetch from 'node-fetch';
-import fs from 'fs';
-export default function getPricesAndExportToCsv() {
-    const rows = fs.readFileSync('data/data-final-sorted.csv', 'utf8').trim().split('\n');
-    const table = rows.map((row) => row.split(';'));
-    let fileTimeStamp = Date.now();
+async function getTrackedItems() {
+    const response = await fetch('http://localhost:3000/items?tracked=true');
+    const trackedItems = (await response.json());
+    return trackedItems;
+}
+async function main() {
+    let trackedItems = await getTrackedItems();
     let index = 0;
     setInterval(async () => {
-        if (index > rows.length - 1) {
+        if (index > trackedItems.length - 1) {
+            trackedItems = await getTrackedItems();
             console.log('>> Restarting');
             index = 0;
-            fileTimeStamp = Date.now();
         }
-        const row = table[index++];
-        if (!row) {
-            console.error(`No row found at index ${index}`);
+        const trackedItem = trackedItems[index++];
+        if (!trackedItem) {
+            console.error(`No item found at index ${index}`);
             return;
         }
-        const id = row[0];
-        if (!id) {
-            console.error(`No id found at index ${index}`);
+        if (!trackedItem.tracked) {
+            console.error(`Item at index ${index} is NOT tracked.`);
             return;
         }
-        const url = row[1];
-        if (!url) {
-            console.error(`No URL found at index ${index}`);
-            return;
-        }
-        console.log(url);
+        console.log(trackedItem.url);
         const options = {
             method: 'GET',
             headers: {
@@ -36,7 +32,7 @@ export default function getPricesAndExportToCsv() {
                 Cookie: 'ActListPageSize=100; sessionid=8e4fdd38d33f339a4110192a; recentlyVisitedAppHubs=496300%2C644930%2C730; webTradeEligibility=%7B%22allowed%22%3A1%2C%22allowed_at_time%22%3A0%2C%22steamguard_required_days%22%3A15%2C%22new_device_cooldown_days%22%3A0%2C%22time_checked%22%3A1679166585%7D; strInventoryLastContext=730_2; steamCurrencyId=3; timezoneOffset=7200,0; steamparental=1680126464%7C%7Cve6wI8oGyJtsUDcJEie%2BLpiFXD3ikd3yCd2%2Fm0IVPqhnU%2F362%2FxKS9Xy%2BhLZUDDN; steamLoginSecure=76561198079493706%7C%7CeyAidHlwIjogIkpXVCIsICJhbGciOiAiRWREU0EiIH0.eyAiaXNzIjogInI6MEQyMl8yMjNGM0Q0NV82M0U0QSIsICJzdWIiOiAiNzY1NjExOTgwNzk0OTM3MDYiLCAiYXVkIjogWyAid2ViIiBdLCAiZXhwIjogMTY4MDQyOTgxMCwgIm5iZiI6IDE2NzE3MDI0MzUsICJpYXQiOiAxNjgwMzQyNDM1LCAianRpIjogIjE3NDNfMjI1MEYwQUJfQ0U1M0UiLCAib2F0IjogMTY3OTQxMzA2MiwgInJ0X2V4cCI6IDE2OTczODkzMzYsICJwZXIiOiAwLCAiaXBfc3ViamVjdCI6ICI5MS41OC4xMTcuMjM0IiwgImlwX2NvbmZpcm1lciI6ICI0Ni4xMTQuMzIuMjE4IiB9.O2ZLUY96SQsq8CT5cUVj7hpzq1qmcB78_ePwcvDWbHJmOeViHLICdwOpvIbf6RCGo1ob_U-H7YU6M94K7wK0Cg; steamCountry=DE%7C0602c6d567b2b3792efb5ddf1760bca4',
                 Host: 'steamcommunity.com',
                 'If-Modified-Since': 'Sat, 01 Apr 2023 15:57:20 GMT',
-                Referer: encodeURIComponent(url),
+                Referer: encodeURIComponent(trackedItem.url),
                 'Sec-Fetch-Dest': 'empty',
                 'Sec-Fetch-Mode': 'cors',
                 'Sec-Fetch-Site': 'same-origin',
@@ -49,15 +45,22 @@ export default function getPricesAndExportToCsv() {
             },
         };
         try {
-            const response = await fetch(`https://steamcommunity.com/market/itemordershistogram?country=DE&language=german&currency=3&item_nameid=${id}&two_factor=0`, options);
+            const response = await fetch(`https://steamcommunity.com/market/itemordershistogram?country=DE&language=german&currency=3&item_nameid=${trackedItem.id}&two_factor=0`, options);
             const data = (await response.json());
-            const line = `${id};${url};${data.highest_buy_order};${data.lowest_sell_order};${Date.now()}`.replace(/\r?\n|\r/g, '') + '\n';
-            fs.appendFileSync(`data/data-final-${fileTimeStamp}.csv`, line);
-            console.log(`${index} / ${rows.length} >> Successful`);
+            await fetch(`http://localhost:3000/items/${trackedItem.id}`, {
+                method: 'PATCH',
+                body: JSON.stringify({
+                    highestBuyOrder: data.highest_buy_order,
+                    lowestSellOrder: data.lowest_sell_order,
+                }),
+                headers: { 'Content-Type': 'application/json' },
+            });
+            console.log(`${index} / ${trackedItems.length} >> Successful`);
         }
         catch (error) {
             console.error(error);
         }
     }, 5000);
 }
-//# sourceMappingURL=getPricesAndExportToCsv.js.map
+main();
+//# sourceMappingURL=index.js.map

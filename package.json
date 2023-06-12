@@ -11,7 +11,9 @@
     "scraping:dev": "nodemon src/scraping/index.ts",
     "scraping:prod": "node dist/scraping/index.js",
     "tracking:dev": "nodemon src/tracking/index.ts",
-    "tracking:prod": "node dist/tracking/index.js"
+    "tracking:prod": "node dist/tracking/index.js",
+    "csv-parser:dev": "nodemon src/csv-parser/index.ts",
+    "csv-parser:prod": "node dist/csv-parser/index.js"
   },
   "proxy": "http://localhost:3000",
   "keywords": [],
@@ -21,7 +23,7 @@
     "@types/express": "^4.17.17",
     "@types/node": "^18.15.11",
     "nodemon": "^2.0.22",
-    "prettier": "^2.8.7",
+    "prettier": "^2.8.8",
     "ts-node": "^10.9.1",
     "typescript": "^5.0.2"
   },

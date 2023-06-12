@@ -41,6 +41,11 @@ async function main() {
       return
     }
 
+    if (!trackedItem.tracked) {
+      console.error(`Item at index ${index} is NOT tracked.`)
+      return
+    }
+
     console.log(trackedItem.url)
 
     const options = {
