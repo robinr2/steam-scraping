@@ -25,59 +25,50 @@ function parseValue(value: string) {
   return value
 }
 
-// function parseLine(lines: string[], lineIndex: number, valueSeparator: string, headers: string[]) {
-//   const records: Record<string, string | number | boolean>[] = []
+function parseLine(lines: string[], lineIndex: number, valueSeparator: string, headers: string[]) {
+  const line = lines[lineIndex]
+  if (!line) {
+    console.log(`[SKIP] Line ${lineIndex + 1}: Line is blank.`)
+    return null
+  }
 
-//   const line = lines[lineIndex]
-//   if (!line) {
-//     console.log(`[SKIP] Line ${lineIndex + 1}: Line is blank.`)
-//     return
-//   }
+  const row = line.split(valueSeparator)
+  if (row.length !== headers.length) {
+    console.log(
+      `[SKIP] Line ${lineIndex + 1}: Row length (${row.length}) does not match headers length (${
+        headers.length
+      }).`
+    )
+    return null
+  }
 
-//   const row = line.split(valueSeparator)
-//   if (row.length !== headers.length) {
-//     console.log(
-//       `[SKIP] Line ${lineIndex + 1}: Row length (${row.length}) does not match headers length (${
-//         headers.length
-//       }).`
-//     )
-//     return
-//   }
+  const record: Record<string, string | number | boolean> = {}
+  let valueIndex: number
+  for (valueIndex = 0; valueIndex < row.length; valueIndex++) {
+    const value = row[valueIndex]
+    if (value === undefined) {
+      console.log(`[SKIP] Line ${lineIndex + 1}: No value at position ${valueIndex + 1}.`)
+      return null
+    }
 
-//   const record: Record<string, string | number | boolean> = {}
+    const header = headers[valueIndex]
+    if (!header) {
+      console.log(
+        `[SKIP] Line ${lineIndex + 1}: No header for value ${value} at position ${valueIndex + 1}.`
+      )
+      return null
+    }
 
-//   let valueIndex: number
-//   for (valueIndex = 0; valueIndex < row.length; valueIndex++) {
-//     const value = row[valueIndex]
-//     if (value === undefined) {
-//       console.error(`[FATAL] Line ${lineIndex + 1}: No value at position ${valueIndex + 1}.`)
-//       return records
-//     }
+    if (!value.trim()) {
+      console.log(`[SKIP] Line ${lineIndex + 1}: Value at position ${valueIndex + 1} is blank.`)
+      return null
+    }
 
-//     const header = headers[valueIndex]
-//     if (!header) {
-//       console.error(
-//         `[FATAL] Line ${lineIndex + 1}: No header for value ${value} at position ${valueIndex + 1}.`
-//       )
-//       return records
-//     }
+    record[header] = parseValue(value)
+  }
 
-//     if (!value.trim()) break
-
-//     record[header] = parseValue(value)
-//   }
-
-//   if (valueIndex !== headers.length) {
-//     console.log(
-//       `[SKIP] Line ${lineIndex + 1}: Record length (${valueIndex}) does not match headers length (${
-//         headers.length
-//       }).`
-//     )
-//     return
-//   }
-
-//   records.push(record)
-// }
+  return record
+}
 
 function parseLines(lines: string[], valueSeparator: string, headers?: string[]) {
   const records: Record<string, string | number | boolean>[] = []
@@ -90,57 +81,8 @@ function parseLines(lines: string[], valueSeparator: string, headers?: string[])
   }
 
   for (let lineIndex = startIndex; lineIndex < lines.length; lineIndex++) {
-    const line = lines[lineIndex]
-
-    if (!line) {
-      console.log(`[SKIP] Line ${lineIndex + 1}: Line is blank.`)
-      continue
-    }
-
-    const row = line.split(valueSeparator)
-    if (row.length !== headers.length) {
-      console.log(
-        `[SKIP] Line ${lineIndex + 1}: Row length (${row.length}) does not match headers length (${
-          headers.length
-        }).`
-      )
-      continue
-    }
-
-    const record: Record<string, string | number | boolean> = {}
-
-    let valueIndex: number
-    for (valueIndex = 0; valueIndex < row.length; valueIndex++) {
-      const value = row[valueIndex]
-      if (value === undefined) {
-        console.error(`[FATAL] Line ${lineIndex + 1}: No value at position ${valueIndex + 1}.`)
-        return records
-      }
-
-      const header = headers[valueIndex]
-      if (!header) {
-        console.error(
-          `[FATAL] Line ${lineIndex + 1}: No header for value ${value} at position ${
-            valueIndex + 1
-          }.`
-        )
-        return records
-      }
-
-      if (!value.trim()) break
-
-      record[header] = parseValue(value)
-    }
-
-    if (valueIndex !== headers.length) {
-      console.log(
-        `[SKIP] Line ${
-          lineIndex + 1
-        }: Record length (${valueIndex}) does not match headers length (${headers.length}).`
-      )
-      continue
-    }
-
+    const record = parseLine(lines, lineIndex, valueSeparator, headers)
+    if (!record) continue
     records.push(record)
   }
 
