@@ -6,4 +6,6 @@ export type Item = {
   sellsPerMonth: number
   tracked: boolean
   updatedAt: number
+  buyOrders: number
+  sellOrders: number
 }

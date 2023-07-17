@@ -15,7 +15,12 @@ function getStartIndex(headers?: string[]) {
   return headers ? 0 : 1
 }
 
-function parseValue(value: string) {
+function parseValue(value: string, valueIndex: number, lineIndex: number) {
+  if (!value.trim()) {
+    console.log(`[SKIP] Line ${lineIndex + 1}: Value at position ${valueIndex + 1} is blank.`)
+    return null
+  }
+
   const numericValue = Number(value)
   if (!isNaN(numericValue)) return numericValue
 
@@ -25,49 +30,36 @@ function parseValue(value: string) {
   return value
 }
 
-function parseLine(lines: string[], lineIndex: number, valueSeparator: string, headers: string[]) {
-  const line = lines[lineIndex]
-  if (!line) {
-    console.log(`[SKIP] Line ${lineIndex + 1}: Line is blank.`)
-    return null
-  }
-
-  const row = line.split(valueSeparator)
-  if (row.length !== headers.length) {
+function parseValues(values: string[], lineIndex: number, headers: string[]) {
+  if (values.length !== headers.length) {
     console.log(
-      `[SKIP] Line ${lineIndex + 1}: Row length (${row.length}) does not match headers length (${
-        headers.length
-      }).`
+      `[SKIP] Line ${lineIndex + 1}: Number of values (${
+        values.length
+      }) does not match number of headers (${headers.length}).`
     )
     return null
   }
 
   const record: Record<string, string | number | boolean> = {}
-  let valueIndex: number
-  for (valueIndex = 0; valueIndex < row.length; valueIndex++) {
-    const value = row[valueIndex]
-    if (value === undefined) {
-      console.log(`[SKIP] Line ${lineIndex + 1}: No value at position ${valueIndex + 1}.`)
-      return null
-    }
-
-    const header = headers[valueIndex]
-    if (!header) {
-      console.log(
-        `[SKIP] Line ${lineIndex + 1}: No header for value ${value} at position ${valueIndex + 1}.`
-      )
-      return null
-    }
-
-    if (!value.trim()) {
-      console.log(`[SKIP] Line ${lineIndex + 1}: Value at position ${valueIndex + 1} is blank.`)
-      return null
-    }
-
-    record[header] = parseValue(value)
+  for (let index = 0; index < headers.length; index++) {
+    const value = values[index]!
+    const parsedValue = parseValue(value, index, lineIndex)
+    if (parsedValue === null) return null
+    const header = headers[index]!
+    record[header] = parsedValue
   }
 
   return record
+}
+
+function parseLine(line: string, lineIndex: number, valueSeparator: string, headers: string[]) {
+  if (!line.trim()) {
+    console.log(`[SKIP] Line ${lineIndex + 1}: Line is blank.`)
+    return null
+  }
+
+  const values = line.split(valueSeparator)
+  return parseValues(values, lineIndex, headers)
 }
 
 function parseLines(lines: string[], valueSeparator: string, headers?: string[]) {
@@ -77,11 +69,12 @@ function parseLines(lines: string[], valueSeparator: string, headers?: string[])
   headers = headers ?? getHeaders(lines, valueSeparator)
   if (!headers) {
     console.error(`[FATAL] Line 1: No headers.`)
-    return records
+    return null
   }
 
   for (let lineIndex = startIndex; lineIndex < lines.length; lineIndex++) {
-    const record = parseLine(lines, lineIndex, valueSeparator, headers)
+    const line = lines[lineIndex]!
+    const record = parseLine(line, lineIndex, valueSeparator, headers)
     if (!record) continue
     records.push(record)
   }
@@ -97,8 +90,7 @@ export default function parseCSV(
 ) {
   const data = readFile(filePath)
   const lines = data.split(lineSeparator)
-  const records = parseLines(lines, valueSeparator, headers)
-  return records
+  return parseLines(lines, valueSeparator, headers)
 }
 
 function main() {
