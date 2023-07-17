@@ -6,10 +6,16 @@ async function getItems() {
 }
 async function main() {
     let items = await getItems();
+    items = items.filter((item) => {
+        return item.lowestSellOrder < 70 && item.lowestSellOrder > 3;
+    });
     let index = 0;
     setInterval(async () => {
         if (index > items.length - 1) {
             items = await getItems();
+            items = items.filter((item) => {
+                return item.lowestSellOrder < 70 && item.lowestSellOrder > 3;
+            });
             console.log('>> Restarting');
             index = 0;
         }
@@ -47,11 +53,16 @@ async function main() {
         try {
             const response = await fetch(`https://steamcommunity.com/market/itemordershistogram?country=DE&language=german&currency=3&item_nameid=${item.id}&two_factor=0`, options);
             const data = (await response.json());
+            const regex = /<span class="market_commodity_orders_header_promote">(\d+)<\/span>/;
+            const buyOrderMatch = data.buy_order_summary.match(regex);
+            const sellOrderMatch = data.sell_order_summary.match(regex);
             await fetch(`http://localhost:3000/items/${item.id}`, {
                 method: 'PATCH',
                 body: JSON.stringify({
                     highestBuyOrder: data.highest_buy_order,
                     lowestSellOrder: data.lowest_sell_order,
+                    buyOrders: buyOrderMatch && buyOrderMatch[1] ? +buyOrderMatch[1] : 0,
+                    sellOrders: sellOrderMatch && sellOrderMatch[1] ? +sellOrderMatch[1] : 0,
                 }),
                 headers: { 'Content-Type': 'application/json' },
             });

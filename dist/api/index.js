@@ -11,6 +11,8 @@ const HEADERS = [
     'sellsPerMonth',
     'tracked',
     'updatedAt',
+    'sellOrders',
+    'buyOrders',
 ];
 app.use(express.json());
 function getFields(line) {
@@ -51,6 +53,8 @@ function getItem(fields) {
     const sellsPerMonth = fields[4] ? +fields[4] : 0;
     const tracked = fields[5] === 'true';
     const updatedAt = fields[6] ? +fields[6] : 0;
+    const buyOrders = fields[7] ? +fields[7] : 0;
+    const sellOrders = fields[8] ? +fields[8] : 0;
     const item = {
         id,
         url,
@@ -59,8 +63,15 @@ function getItem(fields) {
         sellsPerMonth,
         tracked,
         updatedAt,
+        buyOrders,
+        sellOrders,
     };
     return item;
+}
+function compareByPriceDifference(a, b) {
+    const priceDifferenceA = a.lowestSellOrder - (a.highestBuyOrder * 1.15 - 0.01);
+    const priceDifferenceB = b.lowestSellOrder - (b.highestBuyOrder * 1.15 - 0.01);
+    return priceDifferenceB - priceDifferenceA;
 }
 function getItems(req, res) {
     const lines = getLines();
@@ -78,15 +89,48 @@ function getItems(req, res) {
             continue;
         items.push(item);
     }
+    if (req.query.sorted) {
+        items.sort(compareByPriceDifference);
+    }
     if (req.query.tracked) {
         const trackedItems = items.filter((item) => item.tracked);
         res.json(trackedItems);
-        console.log('hello');
         return;
     }
     res.json(items);
 }
+function getSortedUrls(req, res) {
+    const lines = getLines();
+    if (!lines) {
+        res.sendStatus(404);
+        return;
+    }
+    const items = [];
+    for (const line of lines) {
+        const fields = getFields(line);
+        if (!fields)
+            continue;
+        const item = getItem(fields);
+        if (!item)
+            continue;
+        items.push(item);
+    }
+    items.sort(compareByPriceDifference);
+    const urls = [];
+    for (const item of items) {
+        if (item.highestBuyOrder < 5 &&
+            item.highestBuyOrder > 1 &&
+            item.buyOrders > 2000 &&
+            item.sellOrders > 70) {
+            urls.push(item.url);
+        }
+    }
+    console.log(urls);
+    // console.log(urls.slice(240, 260))
+    res.json(urls);
+}
 app.get('/items', getItems);
+app.get('/sortedUrls', getSortedUrls);
 app.patch('/items/:id', (req, res) => {
     const { id } = req.params;
     if (!id) {
@@ -109,9 +153,11 @@ app.patch('/items/:id', (req, res) => {
         const item = getItem(fields);
         if (!item)
             continue;
-        const { highestBuyOrder, lowestSellOrder } = req.body;
+        const { highestBuyOrder, lowestSellOrder, buyOrders, sellOrders } = req.body;
         item.highestBuyOrder = highestBuyOrder ?? item.highestBuyOrder;
         item.lowestSellOrder = lowestSellOrder ?? item.lowestSellOrder;
+        item.buyOrders = buyOrders ?? item.buyOrders;
+        item.sellOrders = sellOrders ?? item.sellOrders;
         item.updatedAt = Date.now();
         lines[i] = Object.values(item).join(';');
         updated = true;

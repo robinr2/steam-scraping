@@ -90,9 +90,6 @@ async function main() {
       const buyOrderMatch = data.buy_order_summary.match(regex)
       const sellOrderMatch = data.sell_order_summary.match(regex)
 
-      console.log(buyOrderMatch![1])
-      console.log(sellOrderMatch![1])
-
       await fetch(`http://localhost:3000/items/${item.id}`, {
         method: 'PATCH',
         body: JSON.stringify({
