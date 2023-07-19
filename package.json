@@ -6,15 +6,8 @@
   "type": "module",
   "scripts": {
     "build": "rm -r dist && tsc",
-    "api:dev": "nodemon src/api/index.ts",
-    "api:prod": "node dist/api/index.js",
     "scraping:dev": "nodemon src/scraping/index.ts",
-    "scraping:prod": "node dist/scraping/index.js",
-    "tracking:dev": "nodemon src/tracking/index.ts",
-    "tracking:prod": "node dist/tracking/index.js",
-    "csv-parser:dev": "nodemon src/csv-parser/index.ts",
-    "csv-parser:prod": "node dist/csv-parser/index.js",
-    "sqlite:dev": "nodemon src/sqlite/index.ts"
+    "scraping:prod": "node dist/scraping/index.js"
   },
   "proxy": "http://localhost:3000",
   "keywords": [],
@@ -32,6 +25,7 @@
   "dependencies": {
     "express": "^4.18.2",
     "node-fetch": "^3.3.1",
+    "pocketbase": "^0.15.3",
     "sqlite3": "^5.1.6"
   }
 }
