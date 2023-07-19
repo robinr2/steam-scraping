@@ -24,3 +24,10 @@ export type ItemOrderHistogramData = {
   price_prefix: string
   price_suffix: string
 }
+
+export type ItemSaleData = {
+  success: boolean
+  price_prefix: string
+  price_suffix: string
+  prices: string[]
+}
