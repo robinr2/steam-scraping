@@ -34,12 +34,16 @@ async function getSalesPerMonth(id: string) {
 }
 
 async function main() {
-  let items = await pb.collection('items').getFullList<Item>()
+  let items = await pb.collection('items').getFullList<Item>({
+    filter: 'salesPerMonth > 600',
+  })
   let index = 0
 
   setInterval(async () => {
     if (index > items.length - 1) {
-      items = await pb.collection('items').getFullList<Item>()
+      items = await pb.collection('items').getFullList<Item>({
+        filter: 'salesPerMonth > 600',
+      })
       console.log('>> Restarting')
       index = 0
     }
@@ -55,14 +59,14 @@ async function main() {
       const sellOrderMatch = data.sell_order_summary.match(ORDER_EXTRACTION_PATTERN)
       const highestBuyOrder = +data.highest_buy_order
       const lowestSellOrder = +data.lowest_sell_order
-      const salesPerMonth = await getSalesPerMonth(item.id)
+      // const salesPerMonth = await getSalesPerMonth(item.id)
       const body = {
         highestBuyOrder,
         lowestSellOrder,
         buyOrders: buyOrderMatch && buyOrderMatch[1] ? +buyOrderMatch[1] : 0,
         sellOrders: sellOrderMatch && sellOrderMatch[1] ? +sellOrderMatch[1] : 0,
         margin: calculateMargin(highestBuyOrder, lowestSellOrder),
-        salesPerMonth,
+        // salesPerMonth,
       }
 
       await pb.collection('items').update(item.id, body)
